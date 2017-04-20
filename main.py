@@ -20,14 +20,15 @@ class PingLooper(object):
             ping_fire_counter += 1
             if ping_fire_counter == int(self.delay) * 60:
                 ping_fire = True
-            counter = 1
             if ping_fire:
-                print("test" + str(counter))
+                if ping_lib.ping(self.net_address):
+                    print("Host Present")
+                else:
+                    print("Host Not Present")
                 ping_fire = False
                 ping_fire_counter = 0
             else:
                 print("dead_loop_test" + str(ping_fire_counter))
-            counter += 1
             time.sleep(1)
 
     def run(self):
