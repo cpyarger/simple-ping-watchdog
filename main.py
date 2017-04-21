@@ -5,6 +5,8 @@ import threading
 import ping_lib
 import os
 
+import rclick_menu
+
 
 class PingLooper(object):
     def __init__(self):
@@ -155,6 +157,8 @@ address_frame.grid(row=10, column=10, columnspan=20, sticky=tkinter.W+tkinter.E)
 address_input = tkinter.ttk.Entry(address_frame)
 address_input.insert(0, looper_job.net_address)
 address_input.pack(side=tkinter.LEFT, fill='x', expand=True)
+right_click_address_input = rclick_menu.RightClickMenu(address_input)
+address_input.bind("<3>", right_click_address_input)
 
 delay_label = tkinter.ttk.Label(address_frame, text="Minutes")
 delay_label.pack(side=tkinter.RIGHT)
