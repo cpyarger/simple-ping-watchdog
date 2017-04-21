@@ -38,7 +38,9 @@ class PingLooper(object):
         def _ping():
             self.write_log_entry(ping_lib.ping(self.net_address))
 
-        self.ping_thread = threading.Thread(target=_ping)
+        def threaded_ping():
+            self.ping_thread = threading.Thread(target=_ping)
+            self.ping_thread.start()
 
         while self.running:
             ping_fire_counter += 1
@@ -46,7 +48,7 @@ class PingLooper(object):
             if ping_fire_counter == ping_fire_delay:
                 ping_fire = True
             if ping_fire:
-                self.ping_thread.start()
+                threaded_ping()
                 ping_fire = False
                 ping_fire_counter = 0
             time.sleep(1)
