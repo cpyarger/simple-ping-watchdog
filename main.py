@@ -148,15 +148,22 @@ root_window.resizable(width=False, height=False)
 
 status_bar_text = tkinter.StringVar(root_window)
 
-address_input = tkinter.ttk.Entry(root_window)
-address_input.insert(0, looper_job.net_address)
-address_input.grid(row=10, column=10, columnspan=20, sticky=tkinter.W+tkinter.E)
+address_frame = tkinter.ttk.Frame(root_window)
+address_frame.grid(row=10, column=10, columnspan=20, sticky=tkinter.W+tkinter.E)
 
-delay_spinbutton = tkinter.Spinbox(root_window, from_=1, to_=9999, width=4, justify=tkinter.RIGHT)
+
+address_input = tkinter.ttk.Entry(address_frame)
+address_input.insert(0, looper_job.net_address)
+address_input.pack(side=tkinter.LEFT, fill='x', expand=True)
+
+delay_label = tkinter.ttk.Label(address_frame, text="Minutes")
+delay_label.pack(side=tkinter.RIGHT)
+
+delay_spinbutton = tkinter.Spinbox(address_frame, from_=1, to_=9999, width=4, justify=tkinter.RIGHT)
 delay_spinbutton.delete(0, "end")
 delay_spinbutton.insert(0, 5)
 delay_spinbutton.configure(state="readonly", command=set_delay)
-delay_spinbutton.grid(row=10, column=20, sticky=tkinter.E)
+delay_spinbutton.pack(side=tkinter.RIGHT)
 
 
 log_on_response_checkbutton_var = tkinter.BooleanVar()
