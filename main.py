@@ -32,7 +32,7 @@ class PingLooper(object):
             time.sleep(1)
 
     def run(self):
-        looper_thread = threading.Thread(self._looper_logic())
+        looper_thread = threading.Thread(target=self._looper_logic)
         looper_thread.start()
         while looper_thread.is_alive():
             root_window.update()
@@ -40,18 +40,21 @@ class PingLooper(object):
     def cancel(self):
         self.running = False
 
-looper_test = PingLooper()
-looper_test.delay = 1
-# looper_test.run()
+looper_job = PingLooper()
+looper_job.delay = 1  # todo: delete this line when interface for delay input is implemented
 
 root_window = tkinter.Tk()
 
+address_input = tkinter.ttk.Entry(root_window)
+address_input.insert(0, looper_job.net_address)
+address_input.grid(row=0, column=0)
+
 go_button = tkinter.ttk.Button(root_window)
-go_button.configure(text="GO", command=looper_test.run)
-go_button.grid(row=0, column=0)
+go_button.configure(text="GO", command=looper_job.run)
+go_button.grid(row=1, column=0)
 
 cancel_button = tkinter.ttk.Button(root_window)
-cancel_button.configure(text="Cancel", command=looper_test.cancel)
-cancel_button.grid(row=0, column=1)
+cancel_button.configure(text="Cancel", command=looper_job.cancel)
+cancel_button.grid(row=1, column=1)
 
 root_window.mainloop()
