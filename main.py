@@ -70,6 +70,7 @@ class PingLooper(object):
         self.looper_thread.start()
         set_status_bar("Running")
         while self.looper_thread.is_alive():
+            time.sleep(0.1)
             root_window.update()
         state_toggle_button.configure(text="Start")
         log_on_response_checkbutton.configure(state='normal')
