@@ -1,3 +1,4 @@
+import tkinter.filedialog
 import tkinter.ttk
 import time
 import threading
@@ -5,90 +6,189 @@ import ping_lib
 import os
 
 
-class Logger(object):
-    def __init__(self):
-        self.output_path = os.path.join(os.getcwd(), "log.csv")
-        self.log_file = None
-        self.log_on_response = False
-        self.log_on_non_response = False
-
-    def open_log_file(self):
-        try:
-            self.log_file = open(self.output_path, "wb")
-        except IOError:
-            return False
-        return True
-
-    def write_log_entry(self, state):
-        if state is True and self.log_on_response is True or state is False and self.log_on_non_response is True:
-            self.log_file.write((str(time.localtime()) + "," + str(state)).encode())
-
-    def close_log_file(self):
-        self.log_file.close()
-
-
 class PingLooper(object):
     def __init__(self):
         self.running = False
         self.delay = "5"
         self.net_address = "127.0.0.1"
-        self.log_file_path = ""
+        self.output_path = os.path.join(os.getcwd())
+        self.output_filename = self.net_address + " ping log.csv"
+        self.output_full_path = os.path.join(self.output_path, self.output_filename)
+        self.log_file = None
+        self.log_on_response = False
+        self.log_on_non_response = False
+        self.looper_thread = None
+
+    def set_full_path(self, input_path):
+        self.output_path = os.path.dirname(input_path)
+        self.output_filename = os.path.basename(input_path)
+        self.output_full_path = input_path
+
+    def set_new_filename(self, file_name):
+        self.output_filename = file_name
+        self.output_full_path = os.path.join(self.output_path, self.output_filename)
 
     def _looper_logic(self):
         self.running = True
-        log_file.open_log_file()
-        go_button.configure(state='disabled')
-        cancel_button.configure(state='enabled')
         ping_fire = False
         ping_fire_counter = 0
+        ping_fire_delay = int(self.delay) * 60
+
+        def _ping():
+            self.write_log_entry(ping_lib.ping(self.net_address))
+
+        self.ping_thread = threading.Thread(target=_ping)
+
         while self.running:
             ping_fire_counter += 1
-            if ping_fire_counter == int(self.delay) * 60:
+            set_status_bar("Running, " + str(ping_fire_delay - ping_fire_counter) + " seconds until next ping")
+            if ping_fire_counter == ping_fire_delay:
                 ping_fire = True
             if ping_fire:
-                log_file.write_log_entry(ping_lib.ping(self.net_address))
+                self.ping_thread.start()
                 ping_fire = False
                 ping_fire_counter = 0
-            else:
-                print("dead_loop_test" + str(ping_fire_counter))
             time.sleep(1)
-        log_file.close_log_file()
-        go_button.configure(state='enabled')
-        cancel_button.configure(state='disabled')
+        self.close_log_file()
+
+    def toggle_run(self):
+        if self.running:
+            self.cancel()
+        else:
+            self.run()
 
     def run(self):
-        looper_thread = threading.Thread(target=self._looper_logic)
-        looper_thread.start()
-        while looper_thread.is_alive():
+        state_toggle_button.configure(text="Stop")
+        select_file_button.configure(state='disabled')
+        log_on_response_checkbutton.configure(state='disabled')
+        log_on_non_response_checkbutton.configure(state='disabled')
+        address_input.configure(state='disabled')
+        delay_spinbutton.configure(state='disabled')
+        self.create_log_file()
+        self.looper_thread = threading.Thread(target=self._looper_logic)
+        self.looper_thread.start()
+        set_status_bar("Running")
+        while self.looper_thread.is_alive():
             root_window.update()
+        state_toggle_button.configure(text="Start")
+        log_on_response_checkbutton.configure(state='normal')
+        log_on_non_response_checkbutton.configure(state='normal')
+        address_input.configure(state='normal')
+        delay_spinbutton.configure(state='readonly')
+        set_status_bar("Run finished, please select log file")
 
     def cancel(self):
         self.running = False
+        state_toggle_button.configure(state='disabled')
+        select_file_button.configure(state='enabled')
+
+    def create_log_file(self):
+        try:
+            self.log_file = open(self.output_full_path, "wb")
+        except IOError:
+            return False
+        self.log_file.write("Date and Time,Tested Address,Host Response\r\n".encode())
+        return True
+
+    def write_log_entry(self, state):
+        if state is True and self.log_on_response is True or state is False and self.log_on_non_response is True:
+            self.log_file.write((str(time.strftime("%Y-%m-%d %H:%M:%S")) +
+                                 looper_job.net_address + "," + str(state) + "\r\n").encode())
+
+    def close_log_file(self):
+        self.log_file.close()
+
+
+class FileSelection(object):
+    def __init__(self):
+        self.file_selection = looper_job.output_path
+        self.output_path_proposed = ''
+
+    def select_file(self):
+        name_output_file()
+        self.output_path_proposed = tkinter.filedialog.asksaveasfilename(
+            initialdir=looper_job.output_path,
+            initialfile=looper_job.output_filename,
+            filetypes=[("CSV File", "*.csv")])
+        if os.path.exists(os.path.dirname(self.output_path_proposed)):
+            looper_job.set_full_path(self.output_path_proposed)
+        else:
+            return
+        if os.path.exists(looper_job.output_path):
+            state_toggle_button.configure(state='enabled')
+            set_status_bar("Press start to ping server on schedule")
+
 
 looper_job = PingLooper()
-log_file = Logger()
+file_selector = FileSelection()
 
 
 def set_delay():
     looper_job.delay = int(delay_spinbutton.get())
+
+
+def log_success_checkbutton_callback():
+    looper_job.log_on_response = log_on_response_checkbutton_var.get()
+
+
+def log_non_success_checkbutton_callback():
+    looper_job.log_on_non_response = log_on_non_response_checkbutton_var.get()
+
+
+def set_status_bar(input_text):
+    status_bar.configure(text=input_text)
+
+
+def name_output_file():
+    looper_job.set_new_filename(address_input.get() + " ping log.csv")
+
 root_window = tkinter.Tk()
+root_window.title("Simple Ping Watchdog")
+root_window.resizable(width=False, height=False)
+
+status_bar_text = tkinter.StringVar(root_window)
 
 address_input = tkinter.ttk.Entry(root_window)
 address_input.insert(0, looper_job.net_address)
-address_input.grid(row=10, column=10)
+address_input.grid(row=10, column=10, columnspan=20, sticky=tkinter.W+tkinter.E)
 
-delay_spinbutton = tkinter.Spinbox(root_window, from_=1, to_=9999)
+delay_spinbutton = tkinter.Spinbox(root_window, from_=1, to_=9999, width=4, justify=tkinter.RIGHT)
 delay_spinbutton.delete(0, "end")
 delay_spinbutton.insert(0, 5)
 delay_spinbutton.configure(state="readonly", command=set_delay)
-delay_spinbutton.grid(row=10, column=20)
+delay_spinbutton.grid(row=10, column=20, sticky=tkinter.E)
 
-go_button = tkinter.ttk.Button(root_window)
-go_button.configure(text="GO", command=looper_job.run)
-go_button.grid(row=20, column=10)
 
-cancel_button = tkinter.ttk.Button(root_window)
-cancel_button.configure(text="Cancel", command=looper_job.cancel, state='disabled')
-cancel_button.grid(row=20, column=20)
+log_on_response_checkbutton_var = tkinter.BooleanVar()
+log_on_response_checkbutton_var.set(looper_job.log_on_response)
+log_on_response_checkbutton = tkinter.Checkbutton(root_window,
+                                                  text="Log on Response",
+                                                  variable=log_on_response_checkbutton_var,
+                                                  onvalue=True,
+                                                  offvalue=False,
+                                                  command=log_success_checkbutton_callback)
+log_on_response_checkbutton.grid(row=15, column=10)
+
+log_on_non_response_checkbutton_var = tkinter.BooleanVar()
+log_on_non_response_checkbutton_var.set(looper_job.log_on_non_response)
+log_on_non_response_checkbutton = tkinter.Checkbutton(root_window,
+                                                      text="Log on Non-Response",
+                                                      variable=log_on_non_response_checkbutton_var,
+                                                      onvalue=True,
+                                                      offvalue=False,
+                                                      command=log_non_success_checkbutton_callback)
+log_on_non_response_checkbutton.grid(row=15, column=20)
+
+state_toggle_button = tkinter.ttk.Button(root_window)
+state_toggle_button.configure(text="GO", command=looper_job.toggle_run, state='disabled')
+state_toggle_button.grid(row=20, column=10)
+
+select_file_button = tkinter.ttk.Button(root_window)
+select_file_button.configure(text="Select Log File", command=file_selector.select_file)
+select_file_button.grid(row=20, column=20)
+
+status_bar = tkinter.ttk.Label(root_window)
+set_status_bar("Please select log file")
+status_bar.grid(row=30, column=10, columnspan=100)
 
 root_window.mainloop()
