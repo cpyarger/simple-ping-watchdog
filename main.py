@@ -4,7 +4,6 @@ import time
 import threading
 import ping_lib
 import os
-
 import rclick_menu
 
 
