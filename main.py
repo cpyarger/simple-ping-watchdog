@@ -12,7 +12,7 @@ class PingLooper(object):
         self.running = False
         self.delay = "5"
         self.net_address = "127.0.0.1"
-        self.output_path = os.path.join(os.getcwd())
+        self.output_path = os.path.join(os.path.expanduser('~'))
         self.output_filename = self.net_address + " ping log.csv"
         self.output_full_path = os.path.join(self.output_path, self.output_filename)
         self.log_file = None
