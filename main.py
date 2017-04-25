@@ -36,7 +36,7 @@ class PingLooper(object):
         ping_fire_delay = int(self.delay) * 60
 
         def _ping():
-            self.write_log_entry(ping_lib.ping(self.net_address))
+            self._write_log_entry(ping_lib.ping(self.net_address))
 
         def threaded_ping():
             self.ping_thread = threading.Thread(target=_ping)
@@ -94,7 +94,7 @@ class PingLooper(object):
         self.log_file.write("Date and Time,Tested Address,Host Response\r\n".encode())
         return True
 
-    def write_log_entry(self, state):
+    def _write_log_entry(self, state):
         if state is True and self.log_on_response is True or state is False and self.log_on_non_response is True:
             self.log_file.write((str(time.strftime("%Y-%m-%d %H:%M:%S")) +
                                  looper_job.net_address + "," + str(state) + "\r\n").encode())
