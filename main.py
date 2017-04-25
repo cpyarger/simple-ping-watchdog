@@ -19,6 +19,9 @@ class PingLooper(object):
         self.log_on_response = False
         self.log_on_non_response = False
         self.looper_thread = None
+        self.ping_fire = False
+        self.ping_fire_counter = 0
+        self.ping_fire_delay = int(self.delay) * 60
 
     def set_full_path(self, input_path):
         self.output_path = os.path.dirname(input_path)
@@ -31,9 +34,9 @@ class PingLooper(object):
 
     def _looper_logic(self):
         self.running = True
-        ping_fire = False
-        ping_fire_counter = 0
-        ping_fire_delay = int(self.delay) * 60
+        self.ping_fire = False
+        self.ping_fire_counter = 0
+        self.ping_fire_delay = int(self.delay) * 60
 
         def _ping():
             self._write_log_entry(ping_lib.ping(self.net_address))
@@ -43,14 +46,15 @@ class PingLooper(object):
             self.ping_thread.start()
 
         while self.running:
-            ping_fire_counter += 1
-            set_status_bar("Running, " + str(ping_fire_delay - ping_fire_counter) + " seconds until next ping")
-            if ping_fire_counter == ping_fire_delay:
-                ping_fire = True
-            if ping_fire:
+            self.ping_fire_counter += 1
+            set_status_bar("Running, " + str(self.ping_fire_delay - self.ping_fire_counter) +
+                           " seconds until next ping")
+            if self.ping_fire_counter == self.ping_fire_delay:
+                self.ping_fire = True
+            if self.ping_fire:
                 threaded_ping()
-                ping_fire = False
-                ping_fire_counter = 0
+                self.ping_fire = False
+                self.ping_fire_counter = 0
             time.sleep(1)
         self.close_log_file()
 
