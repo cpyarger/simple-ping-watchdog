@@ -137,10 +137,18 @@ def set_delay():
 
 def log_success_checkbutton_callback():
     looper_job.log_on_response = log_on_response_checkbutton_var.get()
+    if not looper_job.log_on_response and not looper_job.log_on_non_response:
+        log_on_response_checkbutton.toggle()
+    else:
+        select_file_button.configure(state=tkinter.NORMAL)
 
 
 def log_non_success_checkbutton_callback():
     looper_job.log_on_non_response = log_on_non_response_checkbutton_var.get()
+    if not looper_job.log_on_response and not looper_job.log_on_non_response:
+        log_on_non_response_checkbutton.toggle()
+    else:
+        select_file_button.configure(state=tkinter.NORMAL)
 
 
 def set_status_bar(input_text):
@@ -201,7 +209,7 @@ state_toggle_button.configure(text="GO", command=looper_job.toggle_run, state='d
 state_toggle_button.grid(row=20, column=10)
 
 select_file_button = tkinter.ttk.Button(root_window)
-select_file_button.configure(text="Select Log File", command=file_selector.select_file)
+select_file_button.configure(text="Select Log File", command=file_selector.select_file, state=tkinter.DISABLED)
 select_file_button.grid(row=20, column=20)
 
 status_bar = tkinter.ttk.Label(root_window)
