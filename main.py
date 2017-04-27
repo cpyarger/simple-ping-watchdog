@@ -137,7 +137,6 @@ def set_delay():
 
 def log_success_checkbutton_callback():
     looper_job.log_on_response = log_on_response_checkbutton_var.get()
-    print(log_on_response_checkbutton_var.get())
     if not looper_job.log_on_response and not looper_job.log_on_non_response:
         log_on_response_checkbutton.toggle()
         looper_job.log_on_response = log_on_response_checkbutton_var.get()
@@ -147,7 +146,6 @@ def log_success_checkbutton_callback():
 
 def log_non_success_checkbutton_callback():
     looper_job.log_on_non_response = log_on_non_response_checkbutton_var.get()
-    print(log_on_non_response_checkbutton_var.get())
     if not looper_job.log_on_response and not looper_job.log_on_non_response:
         log_on_non_response_checkbutton.toggle()
         looper_job.log_on_non_response = log_on_non_response_checkbutton_var.get()
