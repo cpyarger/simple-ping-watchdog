@@ -100,7 +100,7 @@ class PingLooper(object):
 
     def _write_log_entry(self, state):
         if state is True and self.log_on_response is True or state is False and self.log_on_non_response is True:
-            self.log_file.write((str(time.strftime("%Y-%m-%d %H:%M:%S")) +
+            self.log_file.write((str(time.strftime("%Y-%m-%d %H:%M:%S")) + "," +
                                  looper_job.net_address + "," + str(state) + "\r\n").encode())
 
     def close_log_file(self):
