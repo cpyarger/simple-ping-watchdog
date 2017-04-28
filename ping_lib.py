@@ -1,5 +1,5 @@
 from platform import system as system_name # Returns the system/OS name
-import subprocess
+from os import system as system_call       # Execute a shell command
 
 
 def ping(host):
@@ -12,4 +12,4 @@ def ping(host):
     parameters = "-n 1" if system_name().lower() == "windows" else "-c 1"
 
     # Pinging
-    return subprocess.call("ping " + parameters + " " + host, shell=False)
+    return system_call("ping " + parameters + " " + host) == 0
