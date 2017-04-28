@@ -71,6 +71,7 @@ class PingLooper(object):
         log_on_non_response_checkbutton.configure(state='disabled')
         address_input.configure(state='disabled')
         delay_spinbutton.configure(state='disabled')
+        address_input.unbind("<3>")
         self.create_log_file()
         self.looper_thread = threading.Thread(target=self._looper_logic)
         self.looper_thread.start()
@@ -83,6 +84,7 @@ class PingLooper(object):
         log_on_non_response_checkbutton.configure(state='normal')
         address_input.configure(state='normal')
         delay_spinbutton.configure(state='readonly')
+        address_input.bind("<3>", right_click_address_input)
         set_status_bar("Run finished, please select log file")
 
     def cancel(self):
