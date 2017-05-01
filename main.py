@@ -102,12 +102,13 @@ class PingLooper(object):
         log_on_non_response_checkbutton.configure(state='normal')
         delay_spinbutton.configure(state='readonly')
         socket_test_port.configure(state='readonly')
+        state_toggle_button.configure(state='disabled')
+        select_file_button.configure(state='enabled')
         set_status_bar("Run finished, please select log file")
 
     def cancel(self):
         self.running = False
-        state_toggle_button.configure(state='disabled')
-        select_file_button.configure(state='enabled')
+        state_toggle_button.configure(text='Cancelling')
 
     def create_log_file(self):
         try:
