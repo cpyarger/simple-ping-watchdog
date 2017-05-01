@@ -3,6 +3,7 @@ import tkinter.ttk
 import time
 import threading
 import ping_lib
+import socket_test_lib
 import os
 import rclick_menu
 
@@ -22,6 +23,7 @@ class PingLooper(object):
         self.ping_fire = False
         self.ping_fire_counter = 0
         self.ping_fire_delay = int(self.delay) * 60
+        self.check_mode_socket = False
 
     def set_full_path(self, input_path):
         self.output_path = os.path.dirname(input_path)
@@ -41,9 +43,16 @@ class PingLooper(object):
         def _ping():
             self._write_log_entry(ping_lib.ping(self.net_address))
 
-        def threaded_ping():
-            self.ping_thread = threading.Thread(target=_ping)
-            self.ping_thread.start()
+        def _socket_test():
+            self._write_log_entry(socket_test_lib.socket_connect(self.net_address, socket_test_port.get()))
+
+        def threaded_check():
+            if not self.check_mode_socket:
+                self.ping_thread = threading.Thread(target=_ping)
+                self.ping_thread.start()
+            else:
+                self.socket_thread = threading.Thread(target=_socket_test())
+                self.socket_thread.start()
 
         while self.running:
             self.ping_fire_counter += 1
@@ -52,7 +61,7 @@ class PingLooper(object):
             if self.ping_fire_counter == self.ping_fire_delay:
                 self.ping_fire = True
             if self.ping_fire:
-                threaded_ping()
+                threaded_check()
                 self.ping_fire = False
                 self.ping_fire_counter = 0
             time.sleep(1)
@@ -162,6 +171,15 @@ def set_status_bar(input_text):
 def name_output_file():
     looper_job.set_new_filename(address_input.get() + " ping log.csv")
 
+
+def set_mode_socket():
+    looper_job.check_mode_socket = test_mode_variable.get()
+
+
+def set_host_callback(input_address):
+    looper_job.net_address = input_address.get()
+
+
 root_window = tkinter.Tk()
 root_window.title("Simple Ping Watchdog")
 root_window.resizable(width=False, height=False)
@@ -169,10 +187,13 @@ root_window.resizable(width=False, height=False)
 status_bar_text = tkinter.StringVar(root_window)
 
 address_frame = tkinter.ttk.Frame(root_window)
-address_frame.grid(row=10, column=10, columnspan=20, sticky=tkinter.W+tkinter.E)
+address_frame.grid(row=10, column=10, columnspan=20, sticky=tkinter.W + tkinter.E)
 
+address_input_var = tkinter.StringVar()
+address_input = tkinter.ttk.Entry(address_frame, textvariable=address_input_var)
+address_input_var.trace("w", lambda name, index, mode,
+                        anonymous_address_input_var=address_input_var: set_host_callback(anonymous_address_input_var))
 
-address_input = tkinter.ttk.Entry(address_frame)
 address_input.insert(0, looper_job.net_address)
 address_input.pack(side=tkinter.LEFT, fill='x', expand=True)
 right_click_address_input = rclick_menu.RightClickMenu(address_input)
@@ -186,7 +207,6 @@ delay_spinbutton.delete(0, "end")
 delay_spinbutton.insert(0, 5)
 delay_spinbutton.configure(state="readonly", command=set_delay)
 delay_spinbutton.pack(side=tkinter.RIGHT)
-
 
 log_on_response_checkbutton_var = tkinter.BooleanVar()
 log_on_response_checkbutton_var.set(looper_job.log_on_response)
@@ -207,6 +227,30 @@ log_on_non_response_checkbutton = tkinter.Checkbutton(root_window,
                                                       offvalue=False,
                                                       command=log_non_success_checkbutton_callback)
 log_on_non_response_checkbutton.grid(row=15, column=20)
+
+test_mode_frame = tkinter.Frame(root_window)
+test_mode_frame.grid(row=17, column=10, columnspan=20, sticky=tkinter.W)
+
+test_mode_variable = tkinter.BooleanVar()
+test_mode_variable.set(False)
+test_mode_ping_radiobutton = tkinter.Radiobutton(test_mode_frame,
+                                                 variable=test_mode_variable,
+                                                 value=False,
+                                                 text="Ping",
+                                                 command=set_mode_socket)
+test_mode_socket_radiobutton = tkinter.Radiobutton(test_mode_frame,
+                                                   variable=test_mode_variable,
+                                                   value=True,
+                                                   text="Socket",
+                                                   command=set_mode_socket)
+test_mode_ping_radiobutton.pack(side=tkinter.LEFT)
+test_mode_socket_radiobutton.pack(side=tkinter.LEFT)
+tkinter.ttk.Label(test_mode_frame, text="Port=").pack(side=tkinter.LEFT)
+socket_test_port = tkinter.Spinbox(test_mode_frame, from_=1, to_=65535, width=5, justify=tkinter.RIGHT)
+socket_test_port.delete(0, "end")
+socket_test_port.insert(0, 80)
+socket_test_port.configure(state="readonly", command=set_delay)
+socket_test_port.pack(side=tkinter.RIGHT)
 
 state_toggle_button = tkinter.ttk.Button(root_window)
 state_toggle_button.configure(text="GO", command=looper_job.toggle_run, state='disabled')
