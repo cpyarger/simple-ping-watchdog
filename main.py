@@ -78,8 +78,10 @@ class PingLooper(object):
         select_file_button.configure(state='disabled')
         log_on_response_checkbutton.configure(state='disabled')
         log_on_non_response_checkbutton.configure(state='disabled')
-        address_input.configure(state='disabled')
-        delay_spinbutton.configure(state='disabled')
+        test_mode_ping_radiobutton.configure(state='disabled')
+        test_mode_socket_radiobutton.configure(state='disabled')
+        for child in test_mode_frame.winfo_children():
+            child.configure(state='disabled')
         address_input.unbind("<3>")
         self.create_log_file()
         self.looper_thread = threading.Thread(target=self._looper_logic)
@@ -94,6 +96,9 @@ class PingLooper(object):
         address_input.configure(state='normal')
         delay_spinbutton.configure(state='readonly')
         address_input.bind("<3>", right_click_address_input)
+        for child in test_mode_frame.winfo_children():
+            child.configure(state='normal')
+        socket_test_port.configure(state='readonly')
         set_status_bar("Run finished, please select log file")
 
     def cancel(self):
