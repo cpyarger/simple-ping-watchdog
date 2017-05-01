@@ -80,6 +80,8 @@ class PingLooper(object):
         log_on_non_response_checkbutton.configure(state='disabled')
         test_mode_ping_radiobutton.configure(state='disabled')
         test_mode_socket_radiobutton.configure(state='disabled')
+        for child in address_frame.winfo_children():
+            child.configure(state='disabled')
         for child in test_mode_frame.winfo_children():
             child.configure(state='disabled')
         address_input.unbind("<3>")
@@ -91,13 +93,14 @@ class PingLooper(object):
             time.sleep(0.1)
             root_window.update()
         state_toggle_button.configure(text="Start")
-        log_on_response_checkbutton.configure(state='normal')
-        log_on_non_response_checkbutton.configure(state='normal')
-        address_input.configure(state='normal')
-        delay_spinbutton.configure(state='readonly')
         address_input.bind("<3>", right_click_address_input)
+        for child in address_frame.winfo_children():
+            child.configure(state='normal')
         for child in test_mode_frame.winfo_children():
             child.configure(state='normal')
+        log_on_response_checkbutton.configure(state='normal')
+        log_on_non_response_checkbutton.configure(state='normal')
+        delay_spinbutton.configure(state='readonly')
         socket_test_port.configure(state='readonly')
         set_status_bar("Run finished, please select log file")
 
