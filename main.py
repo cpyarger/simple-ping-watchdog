@@ -8,6 +8,18 @@ import os
 import rclick_menu
 
 
+common_ports_dict = dict(
+    telnet=23,
+    ssh=22,
+    http=80,
+    dns=53,
+    tftp=69,
+    https=43,
+    smtp_ssl=465,
+    smtp=587
+)
+
+
 class PingLooper(object):
     def __init__(self):
         self.running = False
@@ -189,6 +201,12 @@ def set_host_callback(input_address):
     looper_job.net_address = input_address.get()
 
 
+def set_test_port(_):
+    socket_test_port.configure(state='normal')
+    socket_test_port.delete(0, "end")
+    socket_test_port.insert(0, common_ports_dict[port_preset_selected.get()])
+    socket_test_port.configure(state='readonly')
+
 root_window = tkinter.Tk()
 root_window.title("Simple Ping Watchdog")
 root_window.resizable(width=False, height=False)
@@ -259,6 +277,19 @@ socket_test_port = tkinter.Spinbox(test_mode_frame, from_=1, to_=65535, width=5,
 socket_test_port.delete(0, "end")
 socket_test_port.insert(0, 80)
 socket_test_port.configure(state="readonly", command=set_delay)
+
+common_ports_names_list = list()
+for key, val in common_ports_dict.items():
+    common_ports_names_list.append(key)
+common_ports_names_list.sort()
+
+port_preset_selected = tkinter.StringVar()
+socket_test_port_common_ports = tkinter.ttk.OptionMenu(test_mode_frame,
+                                                       port_preset_selected,
+                                                       'http',
+                                                       *common_ports_names_list,
+                                                       command=set_test_port)
+socket_test_port_common_ports.pack(side=tkinter.RIGHT)
 socket_test_port.pack(side=tkinter.RIGHT)
 
 state_toggle_button = tkinter.ttk.Button(root_window)
