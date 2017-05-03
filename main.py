@@ -7,7 +7,6 @@ import socket_test_lib
 import os
 import rclick_menu
 
-
 common_ports_dict = dict(
     telnet=23,
     ssh=22,
@@ -112,8 +111,7 @@ class PingLooper(object):
             child.configure(state='normal')
         log_on_response_checkbutton.configure(state='normal')
         log_on_non_response_checkbutton.configure(state='normal')
-        delay_spinbutton.configure(state='readonly')
-        socket_test_port.configure(state='readonly')
+        # delay_spinbutton.configure(state='readonly')
         state_toggle_button.configure(state='disabled')
         select_file_button.configure(state='enabled')
         set_status_bar("Run finished, please select log file")
@@ -202,10 +200,29 @@ def set_host_callback(input_address):
 
 
 def set_test_port(_):
-    socket_test_port.configure(state='normal')
     socket_test_port.delete(0, "end")
     socket_test_port.insert(0, common_ports_dict[port_preset_selected.get()])
-    socket_test_port.configure(state='readonly')
+
+
+def port_test_val(in_str, i, acttyp):
+    ind = int(i)
+    if acttyp == '1':  # insert
+        if not in_str[ind].isdigit():
+            return False
+        if not int(in_str) < 65536:
+            return False
+    return True
+
+
+def delay_test_val(in_str, i, acttyp):
+    ind = int(i)
+    if acttyp == '1':  # insert
+        if not in_str[ind].isdigit():
+            return False
+        if not int(in_str) < 10000:
+            return False
+    return True
+
 
 root_window = tkinter.Tk()
 root_window.title("Simple Ping Watchdog")
@@ -229,10 +246,10 @@ address_input.bind("<3>", right_click_address_input)
 delay_label = tkinter.ttk.Label(address_frame, text="Minutes")
 delay_label.pack(side=tkinter.RIGHT)
 
-delay_spinbutton = tkinter.Spinbox(address_frame, from_=1, to_=9999, width=4, justify=tkinter.RIGHT)
+delay_spinbutton = tkinter.Spinbox(address_frame, from_=1, to_=9999, width=4, justify=tkinter.RIGHT, validate="key")
+delay_spinbutton['validatecommand'] = (delay_spinbutton.register(delay_test_val), '%P', '%i', '%d')
 delay_spinbutton.delete(0, "end")
 delay_spinbutton.insert(0, 5)
-delay_spinbutton.configure(state="readonly", command=set_delay)
 delay_spinbutton.pack(side=tkinter.RIGHT)
 
 log_on_response_checkbutton_var = tkinter.BooleanVar()
@@ -273,10 +290,10 @@ test_mode_socket_radiobutton = tkinter.Radiobutton(test_mode_frame,
 test_mode_ping_radiobutton.pack(side=tkinter.LEFT)
 test_mode_socket_radiobutton.pack(side=tkinter.LEFT)
 tkinter.ttk.Label(test_mode_frame, text="Port=").pack(side=tkinter.LEFT)
-socket_test_port = tkinter.Spinbox(test_mode_frame, from_=1, to_=65535, width=5, justify=tkinter.RIGHT)
+socket_test_port = tkinter.Spinbox(test_mode_frame, from_=1, to_=65535, width=5, justify=tkinter.RIGHT, validate="key")
+socket_test_port['validatecommand'] = (socket_test_port.register(port_test_val), '%P', '%i', '%d')
 socket_test_port.delete(0, "end")
 socket_test_port.insert(0, 80)
-socket_test_port.configure(state="readonly", command=set_delay)
 
 common_ports_names_list = list()
 for key, val in common_ports_dict.items():
