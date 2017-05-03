@@ -234,7 +234,7 @@ address_frame = tkinter.ttk.Frame(root_window)
 address_frame.grid(row=10, column=10, columnspan=20, sticky=tkinter.W + tkinter.E)
 
 address_input_var = tkinter.StringVar()
-address_input = tkinter.ttk.Entry(address_frame, textvariable=address_input_var)
+address_input = tkinter.Entry(address_frame, textvariable=address_input_var, relief=tkinter.SUNKEN)
 address_input_var.trace("w", lambda name, index, mode,
                         anonymous_address_input_var=address_input_var: set_host_callback(anonymous_address_input_var))
 
