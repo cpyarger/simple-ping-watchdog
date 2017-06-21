@@ -246,11 +246,16 @@ address_input.bind("<3>", right_click_address_input)
 delay_label = tkinter.ttk.Label(address_frame, text="Minutes")
 delay_label.pack(side=tkinter.RIGHT)
 
-delay_spinbutton = tkinter.Spinbox(address_frame, from_=1, to_=9999, width=4, justify=tkinter.RIGHT, validate="key")
+delay_spinbutton_var = tkinter.StringVar()
+
+delay_spinbutton = tkinter.Spinbox(address_frame, from_=1, to_=9999, width=4, justify=tkinter.RIGHT, validate="key",
+                                   textvariable=delay_spinbutton_var)
 delay_spinbutton['validatecommand'] = (delay_spinbutton.register(delay_test_val), '%P', '%i', '%d')
 delay_spinbutton.delete(0, "end")
 delay_spinbutton.insert(0, 5)
 delay_spinbutton.pack(side=tkinter.RIGHT)
+
+delay_spinbutton_var.trace("w", lambda name, index, mode: set_delay())
 
 log_on_response_checkbutton_var = tkinter.BooleanVar()
 log_on_response_checkbutton_var.set(looper_job.log_on_response)
